@@ -418,6 +418,15 @@ static void GYRO_Common(void)
     static stdev_t var[3];
 
     if (calibratingG > 0) {
+
+        if (f.FIXED_WING) { // && defined(SERVO_FIELD_TRIM) TODO! New function
+            if (accSmooth[2] < - acc_1G / 2  && calibratingG == 1) {
+                for (int i = 0; i < 7; i++)
+                    cfg.servoConf[i].middle = constrain(servo[i], mcfg.midrc - 100, mcfg.midrc + 100);
+                writeEEPROM(0, true);
+            }
+        }
+
         for (axis = 0; axis < 3; axis++) {
             // Reset g[axis] at start of calibration
             if (calibratingG == CALIBRATING_GYRO_CYCLES) {
@@ -446,6 +455,7 @@ static void GYRO_Common(void)
             }
         }
         calibratingG--;
+
     }
     for (axis = 0; axis < 3; axis++)
         gyroADC[axis] -= gyroZero[axis];
