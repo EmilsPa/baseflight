@@ -72,13 +72,14 @@ void fw_nav(void)
     int16_t groundSpeed;
     int spDiff;
     uint8_t i;
+    static uint8_t altCheck;                    // Delay ounter to Check if RTH altitude is reached
 
     // Nav timer
     static uint32_t gpsTimer = 0;
     static uint16_t gpsFreq = 1000 / GPS_UPD_HZ;    // 5HZ 200ms DT
 
     // Calculated Altitude over home in meters
-    int16_t currAlt = GPS_altitude - GPS_home[ALT];         // GPS
+    int16_t currAlt = GPS_altitude - GPS_home[ALT];         // GPS Only
     int16_t navTargetAlt = GPS_hold[ALT] - GPS_home[ALT];   // Diff from homeAlt.
 
     // Handles ReSetting RTH alt if rth is enabled to low!
@@ -111,12 +112,17 @@ void fw_nav(void)
         if (abs(GPS_AltErr) < 1) // Just cruise along in deadpan.
             NAV_Thro = cfg.fw_cruise_throttle;
         else
-            // Add AltitudeError  and scale up with a factor to throttle
+            // Add AltitudeError and increse throttle with a factor 
             NAV_Thro = constrain(cfg.fw_cruise_throttle - (GPS_AltErr * cfg.fw_scaler_throttle), cfg.fw_idle_throttle, cfg.fw_climb_throttle);
 
         // Reset Climbout Flag when Alt have been reached
-        if (f.CLIMBOUT_FW && GPS_AltErr >= 0)
-            f.CLIMBOUT_FW = 0;
+        if (f.CLIMBOUT_FW && GPS_AltErr >= 0) {
+            altCheck ++;
+            if(altCheck >5 || GPS_AltErr > 0 ){ // One sec delay on releasing the flag
+                f.CLIMBOUT_FW = 0;
+                altCheck = 0;
+            }
+        }
 
         // Climb out before RTH
         if (f.GPS_HOME_MODE) {
@@ -131,7 +137,8 @@ void fw_nav(void)
                 GPS_hold[ALT] = GPS_home[ALT] + RTH_Alt;    // Start descend to correct RTH Alt.
         }
 
-        // Always DISARM when Home is within 10 meters if FC is in failsafe.
+        // Always DISARM and abort climbout when Home is within 10 meters is in failsafe.
+        // As safty Cut power and glide down
         if (f.FW_FAILSAFE_RTH_ENABLE && (GPS_distanceToHome < 10)) {
             f.ARMED = 0;
             f.CLIMBOUT_FW = 0;                  // Abort Climbout
@@ -212,7 +219,7 @@ void fw_nav(void)
         // Limit outputs
         GPS_angle[PITCH] = constrain(altDiff / 10, -cfg.fw_gps_maxclimb * 10, cfg.fw_gps_maxdive * 10) + ALT_deltaSum;
         GPS_angle[ROLL] = constrain(navDiff / 10, -cfg.fw_gps_maxcorr * 10, cfg.fw_gps_maxcorr * 10) + NAV_deltaSum;
-        GPS_angle[YAW] = constrain(navDiff / 10, -cfg.fw_gps_rudder * 10, cfg.fw_gps_rudder * 10) + NAV_deltaSum;
+        GPS_angle[YAW] = -(constrain(navDiff / 10, -cfg.fw_gps_rudder * 10, cfg.fw_gps_rudder * 10) + NAV_deltaSum);
 
         // Elevator compensation depending on behaviour.
         // Prevent stall with Disarmed motor
