@@ -101,6 +101,7 @@ void annexCode(void)
     static uint32_t calibratedAccTime;
     int32_t tmp, tmp2;
     int32_t axis, prop1, prop2;
+    uint16_t throttleInput = rcData[THROTTLE];
     static uint16_t MaxBrkpoint = 300; // Max angle of APA
 
     // vbat shit
@@ -110,32 +111,24 @@ void annexCode(void)
     static int64_t mAhdrawnRaw = 0;
     static int32_t vbatCycleTime = 0;
 
-    if (!f.FIXED_WING) { // Baseflight original dynamic PID adjustemnt
-        // PITCH & ROLL only dynamic PID adjustemnt,  depending on throttle value
-        if (rcData[THROTTLE] < cfg.tpa_breakpoint) {
-            prop2 = 100;
-        } else {
-            if (rcData[THROTTLE] < 2000) {
-                prop2 = 100 - (uint16_t)cfg.dynThrPID * (rcData[THROTTLE] - cfg.tpa_breakpoint) / (2000 - cfg.tpa_breakpoint);
+    prop2 = 128;
+
+    if (f.FIXED_WING)
+        throttleInput = rcCommand[THROTTLE]; // Using rcCommand() to include Tpa even in Gps modes.
+
+    // Baseflight original dynamic PID adjustemnt
+    if (throttleInput > cfg.tpa_breakpoint) { // PITCH & ROLL only dynamic PID adjustemnt,  depending on throttle value
+        if (throttleInput > cfg.dynThrPID) {
+            if (throttleInput < 2000) {
+                prop2 -= ((uint16_t)cfg.dynThrPID * (throttleInput - cfg.dynThrPID) >> 9);
             } else {
-                prop2 = 100 - cfg.dynThrPID;
+                prop2 -=  cfg.dynThrPID;
             }
         }
-    } else {
+    }
+    if (f.FIXED_WING) {
         // Throttle & Angle combined PID Attenuation
         // Will dampen the PID's in High speeds dive on Fixed Wing Only
-        prop2 = 128; // prop2 was 100, is 128 now
-        if (rcData[THROTTLE] < cfg.tpa_breakpoint) {
-            prop2 = 128; // Higher prop2 for Fixed wing Same as used in MWii
-        } else {
-            if (rcCommand[THROTTLE] > cfg.dynThrPID) { // Using rcCommand() to include Tpa even in Gps modes.
-                if (rcCommand[THROTTLE] < 2000) {
-                    prop2 -=  ((uint16_t)cfg.dynThrPID * (rcCommand[THROTTLE] - cfg.dynThrPID) >> 9);
-                } else {
-                    prop2 -=  cfg.dynThrPID;
-                }
-            }
-        }
         // APA dynamic PID adjustemnt, depending on Angle of attack
         if (angle[1] > 20)
             prop2 -= ((uint16_t)cfg.dynThrPID * (min(angle[1], MaxBrkpoint)) >> 8);
@@ -145,7 +138,7 @@ void annexCode(void)
 
     for (axis = 0; axis < 3; axis++) {
         tmp = min(abs(rcData[axis] - mcfg.midrc), 500);
-        if (axis != 2) {        // ROLL & PITCH
+        if (axis != 2) { // ROLL & PITCH
             if (cfg.deadband) {
                 if (tmp > cfg.deadband) {
                     tmp -= cfg.deadband;
@@ -332,7 +325,11 @@ static void mwArm(void)
 
 static void mwDisarm(void)
 {
-    if (f.ARMED) {
+    bool DisarmLock = false;
+    if (GPS_speed > 150  && f.FIXED_WING)
+        DisarmLock = true;
+
+    if (f.ARMED && !DisarmLock) {
         f.ARMED = 0;
         // Beep for inform about disarming
         buzzer(BUZZER_DISARMING);
@@ -716,10 +713,13 @@ void loop(void)
         for (i = 0; i < CHECKBOXITEMS; i++)
             rcOptions[i] = (auxState & cfg.activate[i]) > 0;
         f.CRUISE_MODE = rcOptions[BOXGCRUISE];
-        if (f.CRUISE_MODE) {
+
+        // Force a stable mode in GPS Mode
+        if (f.CRUISE_MODE)
             rcOptions[BOXGPSHOLD] = true;
-            rcOptions[BOXHORIZON] = true;
-        }
+
+        if ((rcOptions[BOXGPSHOME] ||  rcOptions[BOXGPSHOLD]) && rcOptions[BOXHORIZON] == false)
+            rcOptions[BOXANGLE] = true;
 
         // note: if FAILSAFE is disable, failsafeCnt > 5 * FAILSAVE_DELAY is always false
         if ((rcOptions[BOXANGLE] || (failsafeCnt > 5 * cfg.failsafe_delay)) && (sensors(SENSOR_ACC))) {
@@ -811,11 +811,9 @@ void loop(void)
 #ifdef GPS
         if (sensors(SENSOR_GPS)) {
             if (f.GPS_FIX && GPS_numSat >= 5) {
-                if (nav_mode != NAV_MODE_NONE && (!f.HORIZON_MODE && !f.ANGLE_MODE))
-                    f.ANGLE_MODE = true; // Force a stable mode in GPS Mode
 
                 // if both GPS_HOME & GPS_HOLD are checked => GPS_HOME is the priority
-                if (rcOptions[BOXGPSHOME] || f.FW_FAILSAFE_RTH_ENABLE ) {
+                if (rcOptions[BOXGPSHOME] || f.FW_FAILSAFE_RTH_ENABLE) {
                     if (!f.GPS_HOME_MODE) {
                         f.GPS_HOME_MODE = 1;
                         f.GPS_HOLD_MODE = 0;
@@ -863,6 +861,8 @@ void loop(void)
         } else {
             f.PASSTHRU_MODE = 0;
         }
+//        if (f.GPS_HOME_MODE || f.GPS_HOLD_MODE) // TODO!
+//            f.PASSTHRU_MODE = 0; // GPS Modes override Failsafe Test
 
         if (f.FIXED_WING) {
             f.HEADFREE_MODE = 0;
@@ -1038,7 +1038,8 @@ void loop(void)
         pid_controller();
 
         mixTable();
-        writeServos();
         writeMotors();
+        if (calibratingG <= 1)
+            writeServos();
     }
 }

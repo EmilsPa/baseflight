@@ -150,13 +150,13 @@ const mixer_t mixers[] = {
     { 0, 1, NULL },                // * MULTITYPE_GIMBAL
     { 6, 0, mixerY6 },             // MULTITYPE_Y6
     { 6, 0, mixerHex6P },          // MULTITYPE_HEX6
-    { 2, 1, mixerVectorThrust },     // * MULTITYPE_FLYING_WING
+    { 2, 1, mixerVectorThrust },   // * MULTITYPE_FLYING_WING
     { 4, 0, mixerY4 },             // MULTITYPE_Y4
     { 6, 0, mixerHex6X },          // MULTITYPE_HEX6X
     { 8, 0, mixerOctoX8 },         // MULTITYPE_OCTOX8
     { 8, 0, mixerOctoFlatP },      // MULTITYPE_OCTOFLATP
     { 8, 0, mixerOctoFlatX },      // MULTITYPE_OCTOFLATX
-    { 2, 1, mixerVectorThrust },    // * MULTITYPE_AIRPLANE
+    { 2, 1, mixerVectorThrust },   // * MULTITYPE_AIRPLANE
     { 0, 1, NULL },                // * MULTITYPE_HELI_120_CCPM
     { 0, 1, NULL },                // * MULTITYPE_HELI_90_DEG
     { 4, 0, mixerVtail4 },         // MULTITYPE_VTAIL4
@@ -166,7 +166,7 @@ const mixer_t mixers[] = {
     { 1, 1, NULL },                // MULTITYPE_SINGLECOPTER
     { 4, 0, mixerAtail4 },         // MULTITYPE_ATAIL4
     { 0, 0, NULL },                // MULTITYPE_CUSTOM
-    { 2, 1, mixerVectorThrust },    // MULTITYPE_CUSTOM_PLANE
+    { 2, 1, mixerVectorThrust },   // MULTITYPE_CUSTOM_PLANE
 };
 
 // mixer rule format servo, input, rate, speed, min, max, box
@@ -178,10 +178,10 @@ static const servoMixer_t servoMixerAirplane[] = {
 };
 
 static const servoMixer_t servoMixerFlyingWing[] = {
-    { 3, INPUT_ROLL,  100, 0, 0, 100, 0 },
-    { 3, INPUT_PITCH, 100, 0, 0, 100, 0 },
-    { 4, INPUT_ROLL,  100, 0, 0, 100, 0 },
-    { 4, INPUT_PITCH, 100, 0, 0, 100, 0 },
+    { 3, INPUT_ROLL,  50, 0, 0, 100, 0 },
+    { 3, INPUT_PITCH, 50, 0, 0, 100, 0 },
+    { 4, INPUT_ROLL,  50, 0, 0, 100, 0 },
+    { 4, INPUT_PITCH, 50, 0, 0, 100, 0 },
 };
 
 static const servoMixer_t servoMixerBI[] = {
@@ -377,7 +377,7 @@ void mixerLoadMix(int index)
 
 void writeServos(void)
 {
-    int i;
+    //int i; // Not used
 
     if (!core.useServo)
         return;

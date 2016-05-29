@@ -200,8 +200,8 @@ typedef struct mixerRules_t {
     const servoMixer_t *rule;
 } mixerRules_t;
 
-#define MAX_SERVO_RULES (2 * MAX_SERVOS)
 #define MAX_SERVOS      8
+#define MAX_SERVO_RULES (2 * MAX_SERVOS)
 #define MAX_SERVO_SPEED UINT8_MAX
 #define MAX_SERVO_BOXES 3
 
@@ -283,7 +283,7 @@ typedef struct config_t {
     uint16_t ap_mode;                       // Temporarily Disables GPS_HOLD_MODE to be able to make it possible to adjust the Hold-position when moving the sticks, creating a deadspan for GPS
 
     // fw-related stuff
-    uint8_t fw_vector_thrust;                   // Enable Vector trust on Twin Engine models
+    uint8_t fw_vector_thrust;                  // Enable Vector thrust on Twin Engine models
     int16_t fw_gps_maxcorr;                    // Degrees banking Allowed by GPS.
     int16_t fw_gps_rudder;                     // Maximum input of Rudder Allowed by GPS.
     int16_t fw_gps_maxclimb;                   // Degrees climbing . To much can stall the plane.

@@ -654,7 +654,7 @@ static void evaluateCommand(void)
         case MSP_BOXIDS:
             headSerialReply(numberBoxItems);
             for (i = 0; i < numberBoxItems; i++) {
-                for  (j = 0; j < CHECKBOXITEMS; j++) {
+                for (j = 0; j < CHECKBOXITEMS; j++) {
                     if (boxes[j].permanentId == availableBoxes[i])
                         serialize8(boxes[j].permanentId);
                 }
@@ -755,7 +755,7 @@ static void evaluateCommand(void)
         case MSP_DEBUG:
             headSerialReply(8);
             // make use of this crap, output some useful QA statistics
-            debug[3] = ((hse_value / 1000000) * 1000) + (SystemCoreClock / 1000000);         // XX0YY [crystal clock : core clock]
+            //debug[3] = ((hse_value / 1000000) * 1000) + (SystemCoreClock / 1000000);         // XX0YY [crystal clock : core clock]
             for (i = 0; i < 4; i++)
                 serialize16(debug[i]);      // 4 variables are here for general monitoring purpose
             break;
