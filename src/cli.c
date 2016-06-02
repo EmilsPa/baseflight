@@ -21,6 +21,7 @@ static void cliHelp(char *cmdline);
 static void cliMap(char *cmdline);
 static void cliMixer(char *cmdline);
 static void cliMotor(char *cmdline);
+static void cliPreset(char *cmdline);
 static void cliProfile(char *cmdline);
 static void cliSave(char *cmdline);
 static void cliSet(char *cmdline);
@@ -48,6 +49,11 @@ static uint32_t bufferIndex = 0;
 
 static float _atof(const char *p);
 static char *ftoa(float x, char *floatString);
+
+// Config default types
+static const char *const presetNames[] = {
+    "MULTI", "AIRPLANE", "FLYING_WING", NULL
+};
 
 // sync this with MultiType enum from mw.h
 static const char *const mixerNames[] = {
@@ -104,6 +110,7 @@ const clicmd_t cmdTable[] = {
     { "map", "mapping of rc channel order", cliMap },
     { "mixer", "mixer name or list", cliMixer },
     { "motor", "get/set motor output value", cliMotor },
+    { "preset", "apply defaults based on airframe type", cliPreset },
     { "profile", "index (0 to 2)", cliProfile },
     { "save", "save and reboot", cliSave },
     { "servo", "edit servo configuration", cliServo },
@@ -1043,19 +1050,6 @@ static void cliMixer(char *cmdline)
         if (strncasecmp(cmdline, mixerNames[i], len) == 0) {
             mcfg.mixerConfiguration = i + 1;
             printf("Mixer set to %s\r\n", mixerNames[i]);
-
-            // Presets for planes. Not functional with current reset
-            // Really Ugly Hack
-            if (mcfg.mixerConfiguration == MULTITYPE_FLYING_WING || mcfg.mixerConfiguration == MULTITYPE_AIRPLANE) {
-                cfg.dynThrPID = 90;
-                cfg.rcExpo8 = 0;
-                cfg.P8[PIDALT] = 30;
-                cfg.I8[PIDALT] = 20;
-                cfg.D8[PIDALT] = 45;
-                cfg.P8[PIDNAVR] = 30;
-                cfg.I8[PIDNAVR] = 20;
-                cfg.D8[PIDNAVR] = 45;
-            }
             break;
         }
     }
@@ -1105,6 +1099,106 @@ static void cliMotor(char *cmdline)
 
     printf("Setting motor %d to %d\r\n", motor_index, motor_value);
     motor_disarmed[motor_index] = motor_value;
+}
+
+static void cliPreset(char *cmdline)
+{
+	
+	  uint32_t i;
+    uint32_t len;
+    bool apply = false;
+
+    len = strlen(cmdline);
+
+    if (len == 0) {
+        cliPrint("Please supply a preset name or list to show available presets.");
+        cliPrint("\r\n");
+    } else if (strncasecmp(cmdline, "list", len) == 0) {
+        cliPrint("Available presets: ");
+        for (i = 0; ; i++) {
+            if (presetNames[i] == NULL)
+                break;
+            printf("%s ", presetNames[i]);
+        }
+        cliPrint("\r\n");
+        return;
+    } else {
+
+        for (i = 0; ; i++) {
+            if (presetNames[i] == NULL) {
+                cliPrint("Invalid preset name...\r\n");
+                break;
+            }
+            if (strncasecmp(cmdline, presetNames[i], len) == 0) {
+                apply = true;
+							  printf("Setting preset defaults: %s\r\n", presetNames[i]);
+								checkFirstTime(true);
+							  // "MULTI", "FIXEDWING", "FLYING_WING"
+							  if (strncasecmp(cmdline, "MULTI", 5) == 0) {
+								    // Currently nothing special for multis...
+								} else if (strncasecmp(cmdline, "AIRPLANE", 5) == 0) {
+									  mcfg.mixerConfiguration = MULTITYPE_AIRPLANE;
+									  cliFeature("GPS");
+									  cliFeature("FAILSAFE");
+									  cliFeature("FW_FAILSAFE_RTH");
+									  cliFeature("MOTOR_STOP");
+                    cliSet("maxthrottle=2000");
+   									cfg.dynThrPID          = 90;
+                    cfg.rcExpo8            = 0;
+                    cfg.P8[PIDALT]         = 30;
+                    cfg.I8[PIDALT]         = 20;
+                    cfg.D8[PIDALT]         = 45;
+                    cfg.P8[PIDNAVR]        = 30;
+                    cfg.I8[PIDNAVR]        = 20;
+                    cfg.D8[PIDNAVR]        = 45;
+										cfg.fw_gps_maxcorr     = 20;        // Max Roll input from GPS (For Flying wings set to >=35)
+										cfg.fw_gps_maxclimb    = 15;        // Max Climb input
+										cfg.fw_gps_maxdive     = 15;        // Max Dive input
+										cfg.fw_gps_rudder      = 15;        // Max Rudder input if rudder is available
+										cfg.fw_climb_throttle  = 1900;      //  Limits Throttle during climbs
+										cfg.fw_cruise_throttle = 1500;      // Suitable average throttle
+										cfg.fw_idle_throttle   = 1300;      //  Lowest throttle during Descending
+										cfg.fw_roll_comp       = 100;       //  How much Elevator compensates Roll in GPS modes
+										cfg.fw_rth_alt         = 50;        //  Min Altitude to keep during RTH. (Max 200m)
+										cfg.small_angle        = 180;       // Will allow the Plane to be Armed in any position.
+                } else if (strncasecmp(cmdline, "FLYING_WING", 5) == 0) {
+									  mcfg.mixerConfiguration = MULTITYPE_FLYING_WING;
+									  cliFeature("GPS");
+									  cliFeature("FAILSAFE");
+									  cliFeature("FW_FAILSAFE_RTH");
+									  cliFeature("MOTOR_STOP");
+                    cliSet("maxthrottle=2000");
+   									cfg.dynThrPID          = 90;
+                    cfg.rcExpo8            = 0;
+                    cfg.P8[PIDALT]         = 30;
+                    cfg.I8[PIDALT]         = 20;
+                    cfg.D8[PIDALT]         = 45;
+                    cfg.P8[PIDNAVR]        = 30;
+                    cfg.I8[PIDNAVR]        = 20;
+                    cfg.D8[PIDNAVR]        = 45;
+										cfg.fw_gps_maxcorr     = 20;        // Max Roll input from GPS (For Flying wings set to >=35)
+										cfg.fw_gps_maxclimb    = 15;        // Max Climb input
+										cfg.fw_gps_maxdive     = 15;        // Max Dive input
+										cfg.fw_gps_rudder      = 15;        // Max Rudder input if rudder is available
+										cfg.fw_climb_throttle  = 1900;      //  Limits Throttle during climbs
+										cfg.fw_cruise_throttle = 1500;      // Suitable average throttle
+										cfg.fw_idle_throttle   = 1300;      //  Lowest throttle during Descending
+										cfg.fw_roll_comp       = 100;       //  How much Elevator compensates Roll in GPS modes
+										cfg.fw_rth_alt         = 50;        //  Min Altitude to keep during RTH. (Max 200m)
+										cfg.small_angle        = 180;       // Will allow the Plane to be Armed in any position.
+								}
+                break;
+            }
+        }
+    }
+
+		if (apply) {
+    		// New preset applied...   Now save and reboot.
+			  writeEEPROM(0, true);
+		    cliPrint("Rebooting...");
+        delay(10);
+        systemReset(false);
+    }
 }
 
 static void cliProfile(char *cmdline)
