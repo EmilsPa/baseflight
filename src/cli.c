@@ -1103,8 +1103,8 @@ static void cliMotor(char *cmdline)
 
 static void cliPreset(char *cmdline)
 {
-	
-	  uint32_t i;
+
+    uint32_t i;
     uint32_t len;
     bool apply = false;
 
@@ -1131,19 +1131,22 @@ static void cliPreset(char *cmdline)
             }
             if (strncasecmp(cmdline, presetNames[i], len) == 0) {
                 apply = true;
-							  printf("Setting preset defaults: %s\r\n", presetNames[i]);
-								checkFirstTime(true);
-							  // "MULTI", "FIXEDWING", "FLYING_WING"
-							  if (strncasecmp(cmdline, "MULTI", 5) == 0) {
-								    // Currently nothing special for multis...
-								} else if (strncasecmp(cmdline, "AIRPLANE", 5) == 0) {
-									  mcfg.mixerConfiguration = MULTITYPE_AIRPLANE;
-									  cliFeature("GPS");
-									  cliFeature("FAILSAFE");
-									  cliFeature("FW_FAILSAFE_RTH");
-									  cliFeature("MOTOR_STOP");
+                printf("Setting preset defaults: %s\r\n", presetNames[i]);
+                checkFirstTime(true);
+                // "MULTI", "FIXEDWING", "FLYING_WING"
+                if (strncasecmp(cmdline, "MULTI", 5) == 0) {
+                    // Currently nothing special for multis...
+                } else if (strncasecmp(cmdline, "AIRPLANE", 5) == 0) {
+                    mcfg.mixerConfiguration = MULTITYPE_AIRPLANE;
+                    cliFeature("GPS");
+                    cliFeature("FAILSAFE");
+                    cliFeature("FW_FAILSAFE_RTH");
+                    cliFeature("MOTOR_STOP");
                     cliSet("maxthrottle=2000");
-   									cfg.dynThrPID          = 90;
+                    cfg.P8[ROLL]           = 20;
+                    cfg.P8[PITCH]          = 20;
+                    cfg.I8[YAW]            = 0;
+                    cfg.dynThrPID          = 90;
                     cfg.rcExpo8            = 0;
                     cfg.P8[PIDALT]         = 30;
                     cfg.I8[PIDALT]         = 20;
@@ -1151,24 +1154,27 @@ static void cliPreset(char *cmdline)
                     cfg.P8[PIDNAVR]        = 30;
                     cfg.I8[PIDNAVR]        = 20;
                     cfg.D8[PIDNAVR]        = 45;
-										cfg.fw_gps_maxcorr     = 20;        // Max Roll input from GPS (For Flying wings set to >=35)
-										cfg.fw_gps_maxclimb    = 15;        // Max Climb input
-										cfg.fw_gps_maxdive     = 15;        // Max Dive input
-										cfg.fw_gps_rudder      = 15;        // Max Rudder input if rudder is available
-										cfg.fw_climb_throttle  = 1900;      //  Limits Throttle during climbs
-										cfg.fw_cruise_throttle = 1500;      // Suitable average throttle
-										cfg.fw_idle_throttle   = 1300;      //  Lowest throttle during Descending
-										cfg.fw_roll_comp       = 100;       //  How much Elevator compensates Roll in GPS modes
-										cfg.fw_rth_alt         = 50;        //  Min Altitude to keep during RTH. (Max 200m)
-										cfg.small_angle        = 180;       // Will allow the Plane to be Armed in any position.
+                    cfg.fw_gps_maxcorr     = 20;        // Max Roll input from GPS (For Flying wings set to >=35)
+                    cfg.fw_gps_maxclimb    = 15;        // Max Climb input
+                    cfg.fw_gps_maxdive     = 15;        // Max Dive input
+                    cfg.fw_gps_rudder      = 15;        // Max Rudder input if rudder is available
+                    cfg.fw_climb_throttle  = 1900;      // Limits Throttle during climbs
+                    cfg.fw_cruise_throttle = 1500;      // Suitable average throttle
+                    cfg.fw_idle_throttle   = 1300;      // Lowest throttle during Descending
+                    cfg.fw_roll_comp       = 100;       // How much Elevator compensates Roll in GPS modes
+                    cfg.fw_rth_alt         = 50;        // Min Altitude to keep during RTH. (Max 200m)
+                    cfg.small_angle        = 180;       // Will allow the Plane to be Armed in any position.
                 } else if (strncasecmp(cmdline, "FLYING_WING", 5) == 0) {
-									  mcfg.mixerConfiguration = MULTITYPE_FLYING_WING;
-									  cliFeature("GPS");
-									  cliFeature("FAILSAFE");
-									  cliFeature("FW_FAILSAFE_RTH");
-									  cliFeature("MOTOR_STOP");
+                    mcfg.mixerConfiguration = MULTITYPE_FLYING_WING;
+                    cliFeature("GPS");
+                    cliFeature("FAILSAFE");
+                    cliFeature("FW_FAILSAFE_RTH");
+                    cliFeature("MOTOR_STOP");
                     cliSet("maxthrottle=2000");
-   									cfg.dynThrPID          = 90;
+                    cfg.P8[ROLL]           = 20;
+                    cfg.P8[PITCH]          = 20;
+                    cfg.I8[YAW]            = 0;
+                    cfg.dynThrPID          = 90;
                     cfg.rcExpo8            = 0;
                     cfg.P8[PIDALT]         = 30;
                     cfg.I8[PIDALT]         = 20;
@@ -1176,28 +1182,25 @@ static void cliPreset(char *cmdline)
                     cfg.P8[PIDNAVR]        = 30;
                     cfg.I8[PIDNAVR]        = 20;
                     cfg.D8[PIDNAVR]        = 45;
-										cfg.fw_gps_maxcorr     = 20;        // Max Roll input from GPS (For Flying wings set to >=35)
-										cfg.fw_gps_maxclimb    = 15;        // Max Climb input
-										cfg.fw_gps_maxdive     = 15;        // Max Dive input
-										cfg.fw_gps_rudder      = 15;        // Max Rudder input if rudder is available
-										cfg.fw_climb_throttle  = 1900;      //  Limits Throttle during climbs
-										cfg.fw_cruise_throttle = 1500;      // Suitable average throttle
-										cfg.fw_idle_throttle   = 1300;      //  Lowest throttle during Descending
-										cfg.fw_roll_comp       = 100;       //  How much Elevator compensates Roll in GPS modes
-										cfg.fw_rth_alt         = 50;        //  Min Altitude to keep during RTH. (Max 200m)
-										cfg.small_angle        = 180;       // Will allow the Plane to be Armed in any position.
-								}
+                    cfg.fw_gps_maxcorr     = 35;        // Max Roll input from GPS (For Flying wings set to >=35)
+                    cfg.fw_gps_maxclimb    = 15;        // Max Climb input
+                    cfg.fw_gps_maxdive     = 15;        // Max Dive input
+                    cfg.fw_gps_rudder      = 15;        // Max Rudder input if rudder is available
+                    cfg.fw_climb_throttle  = 1900;      // Limits Throttle during climbs
+                    cfg.fw_cruise_throttle = 1500;      // Suitable average throttle
+                    cfg.fw_idle_throttle   = 1300;      // Lowest throttle during Descending
+                    cfg.fw_roll_comp       = 100;       // How much Elevator compensates Roll in GPS modes
+                    cfg.fw_rth_alt         = 50;        // Min Altitude to keep during RTH. (Max 200m)
+                    cfg.small_angle        = 180;       // Will allow the Plane to be Armed in any position.
+                }
                 break;
             }
         }
     }
 
-		if (apply) {
-    		// New preset applied...   Now save and reboot.
-			  writeEEPROM(0, true);
-		    cliPrint("Rebooting...");
-        delay(10);
-        systemReset(false);
+    if (apply) {
+        // New preset applied...   Notify user
+        cliPrint("\r\n\r\nPreset has been applied.   Save and restart to activate.");
     }
 }
 
