@@ -325,6 +325,7 @@ static void mwArm(void)
 
 static void mwDisarm(void)
 {
+    // Protection against disarm in air TODO!
     bool DisarmLock = false;
     if (GPS_speed > 150  && f.FIXED_WING)
         DisarmLock = true;
@@ -861,8 +862,9 @@ void loop(void)
         } else {
             f.PASSTHRU_MODE = 0;
         }
-//        if (f.GPS_HOME_MODE || f.GPS_HOLD_MODE) // TODO!
-//            f.PASSTHRU_MODE = 0; // GPS Modes override Failsafe Test
+        if (cfg.fw_Passsthru_Prio == 0)
+            if (f.GPS_HOME_MODE || f.GPS_HOLD_MODE) // TODO! GPS Override Passthru
+                f.PASSTHRU_MODE = 0;
 
         if (f.FIXED_WING) {
             f.HEADFREE_MODE = 0;

@@ -296,6 +296,8 @@ typedef struct config_t {
     uint8_t fw_roll_comp;                      // Adds Elevator Based on Roll Angle
     int16_t fw_cruise_distance;                // Distance to viritual WP.
     uint8_t fw_rth_alt;                        // Min Altitude to keep during RTH. (Max 200m)
+    uint32_t fw_min_speed;                     // Min ground speed during navigation (cm/sec)
+    uint8_t fw_Passsthru_Prio;                 // Set prio on Passthru 0 means GPS have Prio 1
 
 } config_t;
 
@@ -612,4 +614,5 @@ void GPS_set_next_wp(int32_t *lat, int32_t *lon);
 int32_t wrap_18000(int32_t error);
 void fw_nav(void);
 void fw_FlyTo(void);
+void fw_nav_reset(void);
 

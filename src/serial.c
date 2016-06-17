@@ -547,7 +547,7 @@ static void evaluateCommand(void)
             serialize32(cfg.fw_roll_comp); // Float is Not compatible with Gui. Change to serialize8
             serialize8(cfg.fw_rth_alt);
             // next added for future use
-            serialize32(0);
+            serialize32(cfg.fw_min_speed);
             serialize32(0);
             serialize32(0);
             serialize32(0);
@@ -568,7 +568,7 @@ static void evaluateCommand(void)
             read32(); // Just read and skip
             cfg.fw_rth_alt = read8();
             // next added for future use
-            read32();
+            cfg.fw_min_speed = read32();
             read32();
             read32();
             read32();

@@ -282,6 +282,10 @@ const clivalue_t valueTable[] = {
     { "fw_roll_comp", VAR_UINT8, &cfg.fw_roll_comp, 0, 250 },
     { "fw_rth_alt", VAR_UINT8, &cfg.fw_rth_alt, 0, 250 },
     { "fw_cruise_distance", VAR_UINT16, &cfg.fw_cruise_distance, 0, 2000},
+    { "fw_minspeed", VAR_UINT16, &cfg.fw_min_speed, 0, 6000},
+    { "fw_Passsthru_Prio", VAR_UINT8, &cfg.fw_Passsthru_Prio, 0, 1 },
+
+
 };
 
 #define VALUE_COUNT (sizeof(valueTable) / sizeof(clivalue_t))
@@ -1143,19 +1147,21 @@ static void cliPreset(char *cmdline)
                     cliFeature("FW_FAILSAFE_RTH");
                     cliFeature("MOTOR_STOP");
                     cliSet("maxthrottle=2000");
+                    mcfg.disarm_kill_switch = 0;
                     cfg.P8[ROLL]           = 20;
                     cfg.P8[PITCH]          = 20;
                     cfg.I8[YAW]            = 0;
                     cfg.dynThrPID          = 90;
                     cfg.rcExpo8            = 0;
+                    cfg.rcRate8            = 100;
                     cfg.P8[PIDALT]         = 30;
                     cfg.I8[PIDALT]         = 20;
                     cfg.D8[PIDALT]         = 45;
                     cfg.P8[PIDNAVR]        = 30;
                     cfg.I8[PIDNAVR]        = 20;
                     cfg.D8[PIDNAVR]        = 45;
-                    cfg.fw_gps_maxcorr     = 20;        // Max Roll input from GPS (For Flying wings set to >=35)
-                    cfg.fw_gps_maxclimb    = 15;        // Max Climb input
+                    cfg.fw_gps_maxcorr     = 25;        // Max Roll input from GPS (For Flying wings set to >=35)
+                    cfg.fw_gps_maxclimb    = 20;        // Max Climb input
                     cfg.fw_gps_maxdive     = 15;        // Max Dive input
                     cfg.fw_gps_rudder      = 15;        // Max Rudder input if rudder is available
                     cfg.fw_climb_throttle  = 1900;      // Limits Throttle during climbs
@@ -1171,11 +1177,13 @@ static void cliPreset(char *cmdline)
                     cliFeature("FW_FAILSAFE_RTH");
                     cliFeature("MOTOR_STOP");
                     cliSet("maxthrottle=2000");
+                    mcfg.disarm_kill_switch = 0;
                     cfg.P8[ROLL]           = 20;
                     cfg.P8[PITCH]          = 20;
                     cfg.I8[YAW]            = 0;
                     cfg.dynThrPID          = 90;
                     cfg.rcExpo8            = 0;
+                    cfg.rcRate8            = 100;
                     cfg.P8[PIDALT]         = 30;
                     cfg.I8[PIDALT]         = 20;
                     cfg.D8[PIDALT]         = 45;
@@ -1183,7 +1191,7 @@ static void cliPreset(char *cmdline)
                     cfg.I8[PIDNAVR]        = 20;
                     cfg.D8[PIDNAVR]        = 45;
                     cfg.fw_gps_maxcorr     = 35;        // Max Roll input from GPS (For Flying wings set to >=35)
-                    cfg.fw_gps_maxclimb    = 15;        // Max Climb input
+                    cfg.fw_gps_maxclimb    = 20;        // Max Climb input
                     cfg.fw_gps_maxdive     = 15;        // Max Dive input
                     cfg.fw_gps_rudder      = 15;        // Max Rudder input if rudder is available
                     cfg.fw_climb_throttle  = 1900;      // Limits Throttle during climbs

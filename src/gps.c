@@ -762,16 +762,30 @@ static void GPS_calc_longitude_scaling(int32_t lat)
 ////////////////////////////////////////////////////////////////////////////////////
 // Sets the waypoint to navigate, reset neccessary variables and calculate initial values
 //
+#define GEO_SKALEFACT  89.832f  // Scale to match meters  
 void GPS_set_next_wp(int32_t *lat, int32_t *lon)
 {
     GPS_WP[LAT] = *lat;
     GPS_WP[LON] = *lon;
 
     GPS_calc_longitude_scaling(*lat);
-    if (f.CRUISE_MODE)
-        fw_FlyTo();  // PatrikE CruiseMode version
 
-    GPS_distance_cm_bearing(&GPS_coord[LAT], &GPS_coord[LON], &GPS_WP[LAT], &GPS_WP[LON], &wp_distance, &target_bearing);
+// PatrikE CruiseMode version
+    if (f.CRUISE_MODE) {
+        //fw_FlyTo();
+        fw_nav_reset();
+        float wp_lat_diff, wp_lon_diff, scaler;
+        int32_t holdHeading = GPS_ground_course / 10;
+        if (holdHeading > 180)
+            holdHeading -= 360;
+        scaler = (GEO_SKALEFACT / GPS_scaleLonDown) * cfg.fw_cruise_distance;
+        wp_lat_diff = cos(holdHeading * 0.0174532925f) * GPS_scaleLonDown;
+        wp_lon_diff = sin(holdHeading * 0.0174532925f;
+                          GPS_WP[LAT] += wp_lat_diff * scaler;
+                          GPS_WP[LON] += wp_lon_diff * scaler;
+    }
+
+                  GPS_distance_cm_bearing(&GPS_coord[LAT], &GPS_coord[LON], &GPS_WP[LAT], &GPS_WP[LON], &wp_distance, &target_bearing);
 
     nav_bearing = target_bearing;
     GPS_calc_location_error(&GPS_WP[LAT], &GPS_WP[LON], &GPS_coord[LAT], &GPS_coord[LON]);
@@ -1492,7 +1506,7 @@ static bool UBLOX_parse_gps(void)
         case MSG_VELNED:
             // speed_3d                        = _buffer.velned.speed_3d;  // cm/s
             GPS_speed = _buffer.velned.speed_2d;    // cm/s
-            GPS_ground_course = (uint16_t) (_buffer.velned.heading_2d / 10000);     // Heading 2D deg * 100000 rescaled to deg * 10
+            GPS_ground_course = (uint16_t)(_buffer.velned.heading_2d / 10000);      // Heading 2D deg * 100000 rescaled to deg * 10
             _new_speed = true;
             if (!sensors(SENSOR_MAG) && GPS_speed > 100) {
                 GPS_ground_course = wrap_18000(GPS_ground_course * 10) / 10;

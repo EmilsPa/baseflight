@@ -16,7 +16,7 @@ extern PID_PARAM altPID_PARAM;
 #define SAFE_NAV_ALT 25         // Safe Altitude during climbouts Wings Level below this Alt. (ex. trees & buildings..)
 #define SAFE_DECSCEND_ZONE 50   // Radius around home where descending is OK
 // For speedBoost
-#define GPS_MINSPEED 500        // 500= ~18km/h
+// #define GPS_MINSPEED 500        // 500= ~18km/h Moved to CLI
 #define I_TERM 0.1f
 #define GEO_SKALEFACT  89.832f  // Scale to match meters  
 
@@ -44,8 +44,9 @@ void fw_nav_reset(void)
     }
 }
 
-void fw_FlyTo(void) // PatrikE CruiseMode version
+void fw_FlyTo(void) // PatrikE CruiseMode moved to gps.c.
 {
+    fw_nav_reset();
     float wp_lat_diff, wp_lon_diff, scaler;
     int32_t holdHeading = GPS_ground_course / 10;
     if (holdHeading > 180)
@@ -236,9 +237,9 @@ void fw_nav(void)
 
         // Force the Plane move forward in headwind with speedBoost
         groundSpeed = GPS_speed;
-        spDiff = (GPS_MINSPEED - groundSpeed) * I_TERM;
+        spDiff = (cfg.fw_min_speed - groundSpeed) * I_TERM;
 
-        if (GPS_speed < GPS_MINSPEED - 50 || GPS_speed > GPS_MINSPEED + 50)
+        if (GPS_speed < cfg.fw_min_speed - 50 || GPS_speed > cfg.fw_min_speed + 50)
             speedBoost += spDiff;
 
         speedBoost = constrain(speedBoost, 0, 500);
