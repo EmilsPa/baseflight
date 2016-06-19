@@ -780,12 +780,12 @@ void GPS_set_next_wp(int32_t *lat, int32_t *lon)
             holdHeading -= 360;
         scaler = (GEO_SKALEFACT / GPS_scaleLonDown) * cfg.fw_cruise_distance;
         wp_lat_diff = cos(holdHeading * 0.0174532925f) * GPS_scaleLonDown;
-        wp_lon_diff = sin(holdHeading * 0.0174532925f;
-                          GPS_WP[LAT] += wp_lat_diff * scaler;
-                          GPS_WP[LON] += wp_lon_diff * scaler;
+        wp_lon_diff = sin(holdHeading * 0.0174532925f);
+        GPS_WP[LAT] += wp_lat_diff * scaler;
+        GPS_WP[LON] += wp_lon_diff * scaler;
     }
 
-                  GPS_distance_cm_bearing(&GPS_coord[LAT], &GPS_coord[LON], &GPS_WP[LAT], &GPS_WP[LON], &wp_distance, &target_bearing);
+    GPS_distance_cm_bearing(&GPS_coord[LAT], &GPS_coord[LON], &GPS_WP[LAT], &GPS_WP[LON], &wp_distance, &target_bearing);
 
     nav_bearing = target_bearing;
     GPS_calc_location_error(&GPS_WP[LAT], &GPS_WP[LON], &GPS_coord[LAT], &GPS_coord[LON]);
