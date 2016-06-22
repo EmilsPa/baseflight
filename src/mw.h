@@ -433,6 +433,7 @@ typedef struct flags_t {
     uint8_t MOTORS_STOPPED;
     uint8_t FW_FAILSAFE_RTH_ENABLE;
     uint8_t CLIMBOUT_FW;
+    uint8_t CLIMBOUT_AUTOTHR_FW;
     uint8_t CRUISE_MODE;
 } flags_t;
 

@@ -231,6 +231,12 @@ void fw_nav(void)
         if (!f.CLIMBOUT_FW)
             GPS_angle[PITCH] -= (abs(angle[ROLL]) * (cfg.fw_roll_comp / 100));
 
+        // Oh Crap Auto throttle in RTH
+        if (GPS_distanceToHome < 10 && GPS_speed < 100 && f.GPS_HOME_MODE)
+            f.CLIMBOUT_AUTOTHR_FW = false;
+        else
+            f.CLIMBOUT_AUTOTHR_FW = true;
+
         // Throttle compensation depending on behaviour.
         // Compensate throttle with pitch Angle
         NAV_Thro -= constrain(angle[PITCH] * PITCH_COMP, 0, 450);

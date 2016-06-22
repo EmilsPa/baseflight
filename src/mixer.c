@@ -629,7 +629,8 @@ void mixTable(void)
             }
         } else {
             motor[i] = constrain(motor[i], mcfg.minthrottle, mcfg.maxthrottle);
-            if ((rcData[THROTTLE]) < mcfg.mincheck) {
+
+            if ((rcData[THROTTLE]) < mcfg.mincheck && !f.CLIMBOUT_AUTOTHR_FW) {
                 if (!feature(FEATURE_MOTOR_STOP))
                     motor[i] = mcfg.minthrottle;
                 else {

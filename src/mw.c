@@ -716,9 +716,10 @@ void loop(void)
         f.CRUISE_MODE = rcOptions[BOXGCRUISE];
 
         // Force a stable mode in GPS Mode
-        if (f.CRUISE_MODE)
+        if (f.CRUISE_MODE) // Uses GPS Hold mode
             rcOptions[BOXGPSHOLD] = true;
 
+        // Force a stable mode in all GPS Modes
         if ((rcOptions[BOXGPSHOME] ||  rcOptions[BOXGPSHOLD]) && rcOptions[BOXHORIZON] == false)
             rcOptions[BOXANGLE] = true;
 
